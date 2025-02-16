@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  password     String
+  type         String
+  photo        String?
+  Professional Professional?
+  Patient      Patient?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @default(now()) @updatedAt()
+}
+
+model Professional {
+  id              String           @id @default(uuid())
+  specialty       String
+  location        String
+  ageRangeService String
+  freeServices    Int
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String           @unique
+  ServiceSession  ServiceSession[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @default(now()) @updatedAt
+}
+
+model Patient {
+  id             String           @id @default(uuid())
+  User           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String           @unique
+  Anamnese       Anamnese[]
+  ServiceSession ServiceSession[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now()) @updatedAt
+}
+
+model Anamnese {
+  id              String   @id @default(uuid())
+  complains       String
+  familyHistory   String
+  medicationUser  String
+  therapyObjectiv String
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+}
+
+model Testmonials {
+  id          String   @id @default(uuid())
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+}
+
+model SupportGroups {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  location    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+}
+
+model ServiceSession {
+  id             String       @id @default(uuid())
+  description    String
+  status         Boolean
+  rating         Int
+  patient        Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  patientId      String
+  professionalId String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now()) @updatedAt
+}
