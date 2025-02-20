@@ -1,9 +1,12 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../config/prisma.js";
 
 export default class TestmonialsServices {
   async createTestmonial(data) {
+    const { description } = data;
+
+    if (!description)
+      return response.status(400).json({ error: "Missing fields!" });
+
     return await prisma.testmonials.create({ data });
   }
 

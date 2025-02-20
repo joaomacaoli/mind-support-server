@@ -6,18 +6,12 @@ export default class TestmonialsControllers {
   constructor() {}
 
   async createTestmonialController(request, response) {
-    const { description } = request.body;
-
-    if (!description)
-      return response.status(400).json({ error: "Missing fields!" });
-
     try {
-      const testmonial = await testmonialsServices.createTestmonial({
-        description,
-      });
+      const testmonial = await testmonialsServices.createTestmonial(
+        request.body
+      );
       return response.status(200).json(testmonial);
     } catch (error) {
-      console.error("Error creating user:", error);
       response.status(400).send({ error: error.message });
     }
   }
