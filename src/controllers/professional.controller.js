@@ -6,19 +6,23 @@ export default class ProfessionalController {
   constructor() {}
 
   async createProfessionalController(request, response) {
-    const { specialty, location, ageRangeService, freeServices } = request.body;
+    return response.send(console.log("controller em construção"));
+
+    const { specialty, location, ageRangeService, freeServices, userId } =
+      request.body;
 
     if (!specialty || !location || !ageRangeService || !freeServices) {
       return response.status(400).json({ error: "Missing fields!" });
     }
 
     try {
-      const professional = await professionalsServices.createProfessional(
+      const professional = await professionalsServices.createProfessional({
+        userId,
         specialty,
         location,
         ageRangeService,
-        freeServices
-      );
+        freeServices,
+      });
       return response.status(200).json(professional);
     } catch (error) {
       console.error("Error creating user:", error);

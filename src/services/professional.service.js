@@ -1,22 +1,18 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import prisma from "../config/prisma.js";
 
 export default class ProfessionalsServices {
-  async createProfessional(
-    userId,
-    specialty,
-    location,
-    ageRangeService,
-    freeServices
-  ) {
-    return await prisma.professional.create({
-      data: {
-        specialty,
-        location,
-        ageRangeService,
-        freeServices,
-        userId, // Relacionando com o ID do usuário criado
-      },
+  async createProfessional(data) {
+    return await prisma.professional.create({ data });
+  }
+
+  async createProfessionalWithTransaction(tx, data) {
+    const { userId, specialty, location, ageRangeService, freeServices } = data;
+
+    if (!specialty || !location || !ageRangeService || !freeServices)
+      throw new Error("Missing professional fields!");
+
+    return await tx.professional.create({
+      data: { userId, specialty, location, ageRangeService, freeServices },
     });
   }
 
