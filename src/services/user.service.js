@@ -1,43 +1,69 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../config/prisma.js";
+import ProfessionalsServices from "./professional.service.js";
 
 export default class UsersServices {
+  constructor() {
+    this.professionalsServices = new ProfessionalsServices();
+  }
+
   async createUser(data) {
-    return await prisma.user.create({ data });
+    const { name, email, password, type, ...typeData } = data;
+
+    if (!name || !email || !password || !type)
+      throw new Error("Missing user fields!");
+
+    if (type !== "professional" && type !== "patient")
+      throw new Error("Non-existent user type!");
+
+    return await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: { name, email, password, type },
+      });
+
+      if (type === "professional") {
+        await this.professionalsServices.createProfessionalWithTransaction(tx, {
+          userId: user.id,
+          ...typeData,
+        });
+      }
+
+      return user;
+    });
   }
 
   async readUser() {
     return await prisma.user.findMany({
-      include: {
-        Professional: true,
-      },
+      include: { Professional: true },
     });
   }
 
-  async readUserById(id) {
-    return await prisma.user.findUnique({
+  async readByIdUser(id) {
+    const user = await prisma.user.findUnique({
       where: { id },
-      include: {
-        Professional: true,
-      },
+      include: { Professional: true },
     });
+
+    if (!user) throw new Error("User not found!");
+
+    return user;
   }
 
   async updateUser(id, data) {
+    await this.readByIdUser(id);
+
     return await prisma.user.update({
       where: { id },
       data,
+      include: { Professional: true },
     });
   }
 
   async deleteUser(id) {
-    const user = await this.readById(id);
+    const user = await this.readByIdUser(id);
 
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (user.type === "professional" && user.Professional)
+      await this.professionalsServices.deleteProfessional(user.Professional.id);
 
-    await prisma.user.delete({ where: { id } });
-
-    return user;
+    return await prisma.user.delete({ where: { id } });
   }
 }
