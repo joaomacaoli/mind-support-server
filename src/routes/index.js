@@ -1,12 +1,14 @@
 import { Router } from "express";
 
 import professionalRouter from "./professional.routes.js";
+import supportGroupRouter from "./support-groups.routes.js";
 import testimonialRouter from "./testimonials.routes.js";
 import userRouter from "./user.routes.js";
 
 const routes = Router();
 
 routes.use("/professionals", professionalRouter);
+routes.use("/support-groups", supportGroupRouter);
 routes.use("/testimonials", testimonialRouter);
 routes.use("/users", userRouter);
 
