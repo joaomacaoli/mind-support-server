@@ -61,7 +61,7 @@ model Anamnese {
   updatedAt       DateTime @default(now()) @updatedAt
 }
 
-model Testmonials {
+model Testimonials {
   id          String   @id @default(uuid())
   description String
   createdAt   DateTime @default(now())
