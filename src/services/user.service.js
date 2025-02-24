@@ -22,9 +22,6 @@ export default class UsersServices {
 
     return await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
-        omit: {
-          password: true,
-        },
         data: { name, email, password: passwordHashed, type },
       });
 
@@ -41,15 +38,15 @@ export default class UsersServices {
 
   async readUser() {
     return await prisma.user.findMany({
-      omit: {
-        password: true,
-      },
       include: { Professional: true },
     });
   }
 
   async readByEmailUser(email) {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true, email: true, password: true },
+    });
 
     if (!user) throw new Error("Invalid credentials!");
 
@@ -60,9 +57,6 @@ export default class UsersServices {
     if (!id || !isUuid(id)) throw new Error("Valid UUID is required!");
 
     const user = await prisma.user.findUnique({
-      omit: {
-        password: true,
-      },
       where: { id },
       include: { Professional: true },
     });
@@ -75,10 +69,23 @@ export default class UsersServices {
   async updateUser(id, data) {
     await this.readByIdUser(id);
 
+    if (data.email) {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: data.email },
+      });
+
+      if (existingUser && existingUser.id !== id) {
+        throw new Error("O e-mail já está em uso por outro usuário.");
+      }
+    }
+
+    if (data.password) {
+      data.password = bcrypt.hashSync(data.password, Number(process.env.SALT));
+    } else {
+      delete data.password; // Remove o campo para evitar sobrescrever com undefined
+    }
+
     return await prisma.user.update({
-      omit: {
-        password: true,
-      },
       where: { id },
       data,
       include: { Professional: true },
@@ -91,11 +98,6 @@ export default class UsersServices {
     if (user.type === "professional" && user.Professional)
       await this.professionalsServices.deleteProfessional(user.Professional.id);
 
-    return await prisma.user.delete({
-      omit: {
-        password: true,
-      },
-      where: { id },
-    });
+    return await prisma.user.delete({ where: { id } });
   }
 }
