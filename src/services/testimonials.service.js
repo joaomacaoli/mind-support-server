@@ -1,11 +1,11 @@
 import prisma from "../config/prisma.js";
+import { validate as isUuid } from "uuid";
 
 export default class TestimonialsServices {
   async createTestimonial(data) {
     const { description } = data;
 
-    if (!description)
-      return response.status(400).json({ error: "Missing fields!" });
+    if (!description) throw new Error("Missing fields!");
 
     return await prisma.testimonials.create({ data });
   }
@@ -15,10 +15,20 @@ export default class TestimonialsServices {
   }
 
   async readByIdTestimonial(id) {
-    return await prisma.testimonials.findUnique({ where: { id } });
+    if (!id || !isUuid(id)) throw new Error("Valid UUID is required!");
+
+    const testimonial = await prisma.testimonials.findUnique({
+      where: { id },
+    });
+
+    if (!testimonial) throw new Error("Testimonial not found!");
+
+    return testimonial;
   }
 
   async updateTestimonial(id, data) {
+    await this.readByIdTestimonial(id);
+
     return await prisma.testimonials.update({
       where: { id },
       data,
@@ -27,9 +37,6 @@ export default class TestimonialsServices {
 
   async deleteTestimonial(id) {
     const testimonial = await this.readByIdTestimonial(id);
-
-    if (!testimonial)
-      return res.status(404).json({ error: "Testimonials not found" });
 
     await prisma.testimonials.delete({ where: { id } });
 

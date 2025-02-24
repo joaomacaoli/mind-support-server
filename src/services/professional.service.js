@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js";
+import { validate as isUuid } from "uuid";
 
 export default class ProfessionalsServices {
   async createProfessional(data) {
@@ -25,7 +26,15 @@ export default class ProfessionalsServices {
   }
 
   async readProfessionalById(id) {
-    return await prisma.professional.findUnique({ where: { id } });
+    if (!id || !isUuid(id)) throw new Error("Valid UUID is required!");
+
+    const professional = await prisma.professional.findUnique({
+      where: { id },
+    });
+
+    if (!user) throw new Error("Professional not found!");
+
+    return professional;
   }
 
   async updateProfessional(id, data) {

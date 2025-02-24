@@ -1,5 +1,6 @@
 import prisma from "../config/prisma.js";
 import ProfessionalsServices from "./professional.service.js";
+import { validate as isUuid } from "uuid";
 
 export default class UsersServices {
   constructor() {
@@ -38,6 +39,8 @@ export default class UsersServices {
   }
 
   async readByIdUser(id) {
+    if (!id || !isUuid(id)) throw new Error("Valid UUID is required!");
+
     const user = await prisma.user.findUnique({
       where: { id },
       include: { Professional: true },
