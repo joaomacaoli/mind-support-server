@@ -1,15 +1,16 @@
 import { Router } from "express";
 
 import UserController from "../controllers/users.controller.js";
+import { authenticateJWT } from "../middlewares/auth.middleware.js";
 
 const userRouter = Router();
 
 const userController = new UserController();
 
-userRouter.get("/", userController.readUserController);
-userRouter.get("/:id", userController.readByIdUserController);
 userRouter.post("/", userController.createUserController);
-userRouter.put("/:id", userController.updateUserController);
-userRouter.delete("/:id", userController.deleteUserController);
+userRouter.get("/", authenticateJWT, userController.readUserController);
+userRouter.get("/:id", authenticateJWT, userController.readByIdUserController);
+userRouter.put("/:id", authenticateJWT, userController.updateUserController);
+userRouter.delete("/:id", authenticateJWT, userController.deleteUserController);
 
 export default userRouter;
