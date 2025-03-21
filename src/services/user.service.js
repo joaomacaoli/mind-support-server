@@ -38,7 +38,7 @@ export default class UsersServices {
 
   async readUser() {
     return await prisma.user.findMany({
-      include: { Professional: true },
+      include: { Professional: true, Patient: true },
     });
   }
 

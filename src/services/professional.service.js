@@ -7,13 +7,21 @@ export default class ProfessionalsServices {
   }
 
   async createProfessionalWithTransaction(tx, data) {
-    const { userId, specialty, location, ageRangeService, freeServices } = data;
+    const { userId, specialty, location, ageRangeService, freeServices, cnpj } =
+      data;
 
-    if (!specialty || !location || !ageRangeService || !freeServices)
+    if (!specialty || !location || !ageRangeService || !freeServices || !cnpj)
       throw new Error("Missing professional fields!");
 
     return await tx.professional.create({
-      data: { userId, specialty, location, ageRangeService, freeServices },
+      data: {
+        userId,
+        specialty,
+        location,
+        ageRangeService,
+        freeServices,
+        cnpj,
+      },
     });
   }
 

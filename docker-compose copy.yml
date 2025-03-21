@@ -1,0 +1,18 @@
+services:
+  db:
+    image: postgres:15
+    container_name: task_manager_postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_POSTGRES_NAME}
+      POSTGRES_USER: ${DB_POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${DB_POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${DB_POSTGRES_PORT}:5432"
+
+volumes:
+  pgdata:
+    driver: local
+# docker compose --env-file .env.local up -d -> to run with local environment
